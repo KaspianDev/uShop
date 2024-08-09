@@ -75,12 +75,12 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>de.spaceio:SpaceIOMetrics</include>
+                                    <include>com.github.mastercake10:SpaceIOMetrics</include>
                                 </includes>
                             </artifactSet>
                             <filters>
                                 <filter>
-                                    <artifact>de.spaceio:SpaceIOMetrics</artifact>
+                                    <artifact>com.github.mastercake10:SpaceIOMetrics</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>

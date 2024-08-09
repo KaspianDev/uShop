@@ -69,20 +69,31 @@ public class Listeners implements Listener {
             }
         }
         if (e.getClick() == ClickType.SHIFT_RIGHT || e.getClick() == ClickType.SHIFT_LEFT) return;
+
+        //SELL
+        double total = plugin.calcWorthOfContent(e.getInventory().getContents());
+        plugin.getEconomy().depositPlayer(p, total);
+        p.sendMessage(Utils.color(plugin.getConfig().getString("message-sold")
+                                        .replace("%total%", plugin.getEconomy().format(total))));
+
+        HashMap<CustomItem, Integer> listOfItems = plugin.getSalableItems(e.getInventory().getContents());
+        int sum = listOfItems.values().stream().mapToInt(Integer::intValue).sum();
+        if (plugin.getLimitManager().canPurchase(p, sum)) {
+            plugin.getLimitManager().addPurchase(p, sum);
+        } else {
+            p.sendMessage(Utils.color(plugin.getConfig().getString("limit-hit")
+                                            .replace("%items%", String.valueOf(plugin.getLimitManager().getRemainingLimit(p)))));
+            e.setCancelled(true);
+            return;
+        }
+
         //REMOVE SELL ITEM
         e.getInventory().setItem(e.getSlot(), new ItemStack(Material.AIR));
         if (e.getCursor() != null) {
             e.getInventory().addItem(e.getCursor());
             e.setCursor(null);
         }
-        //SELL
-        double total = plugin.calcWorthOfContent(e.getInventory().getContents());
-        plugin.getEconomy().depositPlayer(p, total);
-        p.sendMessage(plugin.getConfig().getString("message-sold")
-                            .replace('&', '§')
-                            .replace("%total%", plugin.getEconomy().format(total)));
 
-        HashMap<CustomItem, Integer> listOfItems = plugin.getSalableItems(e.getInventory().getContents());
         List<String> allLines = new ArrayList<>();
         allLines.add(Utils.color(plugin.getConfig().getString("receipt.header")));
         for (Entry<CustomItem, Integer> entry : listOfItems.entrySet()) {

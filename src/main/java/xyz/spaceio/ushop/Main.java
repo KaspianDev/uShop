@@ -30,7 +30,6 @@ import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Main extends JavaPlugin {
 
@@ -47,12 +46,12 @@ public class Main extends JavaPlugin {
     /*
      * Inventories that are currently open
      */
-    private Map<Player, Inventory> openShops = new HashMap<Player, Inventory>();
+    private Map<Player, Inventory> openShops = new HashMap<>();
 
     /*
      * List that contains all information about sell items
      */
-    private List<CustomItem> customItems = new ArrayList<CustomItem>();
+    private List<CustomItem> customItems = new ArrayList<>();
 
     /*
      * Gson object for serializing processes
@@ -70,6 +69,8 @@ public class Main extends JavaPlugin {
      * The plugin's main task for updating GUI elements
      */
     private BukkitTask pluginTask;
+
+    private LimitManager limitManager;
 
     @Override
     public void onEnable() {
@@ -94,6 +95,8 @@ public class Main extends JavaPlugin {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        this.limitManager = new LimitManager(this, cfg.getInt("hourly-limit"));
 
         // async update task
         pluginTask = this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
@@ -394,12 +397,10 @@ public class Main extends JavaPlugin {
             }
         } else {
             // adding default materials
-            List<String> entries = Arrays.stream(Material.values()).map(v -> v.name() + ":0.0").collect(Collectors.toList());
-            this.cfg.set("sell-prices-simple", entries);
+            List<String> defaults = Collections.singletonList(Material.DIRT.name() + ":1.0");
+            this.cfg.set("sell-prices-simple", defaults);
             this.saveConfig();
-            for (Material mat : Material.values()) {
-                customItems.add(new CustomItem(new ItemStack(mat), 0d));
-            }
+            customItems.add(new CustomItem(new ItemStack(Material.DIRT), 1d));
         }
     }
 
@@ -408,6 +409,10 @@ public class Main extends JavaPlugin {
      */
     public long getCustomItemCount() {
         return customItems.stream().filter(p -> !p.isSimpleItem()).count();
+    }
+
+    public LimitManager getLimitManager() {
+        return limitManager;
     }
 
     public void reloadItems() {

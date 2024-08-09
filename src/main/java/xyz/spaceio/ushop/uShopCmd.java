@@ -36,6 +36,7 @@ public class uShopCmd implements CommandExecutor {
         if (args[0].equalsIgnoreCase("reload")) {
             cs.sendMessage("§aConfig.yml reloaded!");
             plugin.reloadItems();
+            plugin.getLimitManager().reload();
             return true;
         } else if (args[0].equalsIgnoreCase("add")) {
             if (args.length == 1) return true;
