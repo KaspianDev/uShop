@@ -12,13 +12,15 @@ import java.util.UUID;
 public class LimitManager {
 
     private final Main plugin;
-    private final Map<UUID, Integer> playerPurchases;
+    private final Map<UUID, Integer> playerLimits;
+    private LimitType type;
     private int limit;
 
-    public LimitManager(Main plugin, int limit) {
+    public LimitManager(Main plugin, LimitType type, int limit) {
         this.plugin = plugin;
+        this.type = type;
         this.limit = limit;
-        this.playerPurchases = new HashMap<>();
+        this.playerLimits = new HashMap<>();
         reset();
     }
 
@@ -27,11 +29,11 @@ public class LimitManager {
         UUID uuid = player.getUniqueId();
 
         int purchases;
-        if (!playerPurchases.containsKey(uuid)) {
+        if (!playerLimits.containsKey(uuid)) {
             purchases = 0;
-            playerPurchases.put(uuid, purchases);
+            playerLimits.put(uuid, purchases);
         } else {
-            purchases = playerPurchases.get(uuid);
+            purchases = playerLimits.get(uuid);
         }
 
         int newPurchases = purchases + amount;
@@ -40,7 +42,7 @@ public class LimitManager {
 
     public int getRemainingLimit(Player player) {
         UUID uuid = player.getUniqueId();
-        int purchases = playerPurchases.getOrDefault(uuid, 0);
+        int purchases = playerLimits.getOrDefault(uuid, 0);
 
         return limit - purchases;
     }
@@ -49,20 +51,22 @@ public class LimitManager {
         if (limit < 1) return;
         UUID uuid = player.getUniqueId();
 
-        int purchases;
-        if (!playerPurchases.containsKey(uuid)) {
-            purchases = 0;
-            playerPurchases.put(uuid, purchases);
+        int newAmount;
+        if (!playerLimits.containsKey(uuid)) {
+            newAmount = 0;
+            playerLimits.put(uuid, newAmount);
         } else {
-            purchases = playerPurchases.get(uuid);
+            newAmount = playerLimits.get(uuid);
         }
 
-        purchases += amount;
-        playerPurchases.put(uuid, purchases);
+        newAmount += amount;
+        playerLimits.put(uuid, newAmount);
     }
 
     public void reload() {
-        limit = plugin.getConfig().getInt("hourly-limit");
+        type = LimitType.valueOf(plugin.getConfig().getString("limit-type"));
+        limit = plugin.getConfig().getInt("limit");
+        playerLimits.clear();
     }
 
     private void reset() {
@@ -75,9 +79,20 @@ public class LimitManager {
         Duration duration = Duration.between(now, nextHour);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            playerPurchases.clear();
+            playerLimits.clear();
             reset();
         }, (duration.toMillis() / 1000) * 20);
+    }
+
+    public LimitType getType() {
+        return type;
+    }
+
+    public enum LimitType {
+
+        AMOUNT,
+        MONEY
+
     }
 
 }

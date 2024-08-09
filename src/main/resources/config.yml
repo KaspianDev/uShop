@@ -14,5 +14,6 @@ gui-item-enumeration-format: "%amount%x &c%material%&r = &a %price%"
 message-sold: "&aSold all items for &c%total%&a!"
 limit-hit: "&cYou can only sell %items% more items, your limit will reset next hour!"
 command: "sell"
-hourly-limit: -1
+limit-type: MONEY
+limit: -1
 # sell prices. I suggest to use /ushop setprice in game for adding items, or use /ushop convert in order to use your essentialsx prices!

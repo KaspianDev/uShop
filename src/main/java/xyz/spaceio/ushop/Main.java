@@ -96,7 +96,10 @@ public class Main extends JavaPlugin {
             e.printStackTrace();
         }
 
-        this.limitManager = new LimitManager(this, cfg.getInt("hourly-limit"));
+        this.limitManager = new LimitManager(
+                this,
+                LimitManager.LimitType.valueOf(cfg.getString("limit-type")),
+                cfg.getInt("limit"));
 
         // async update task
         pluginTask = this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
