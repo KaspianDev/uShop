@@ -72,20 +72,23 @@ public class Listeners implements Listener {
 
         //SELL
         double total = plugin.calcWorthOfContent(e.getInventory().getContents());
-        plugin.getEconomy().depositPlayer(p, total);
-        p.sendMessage(Utils.color(plugin.getConfig().getString("message-sold")
-                                        .replace("%total%", plugin.getEconomy().format(total))));
 
         HashMap<CustomItem, Integer> listOfItems = plugin.getSalableItems(e.getInventory().getContents());
-        int sum = listOfItems.values().stream().mapToInt(Integer::intValue).sum();
-        if (plugin.getLimitManager().canPurchase(p, sum)) {
-            plugin.getLimitManager().addPurchase(p, sum);
+        double limitIncrease = (plugin.getLimitManager().getType() == LimitManager.LimitType.AMOUNT)
+                ? listOfItems.values().stream().mapToInt(Integer::intValue).sum()
+                : total;
+        if (plugin.getLimitManager().canPurchase(p, limitIncrease)) {
+            plugin.getLimitManager().addToLimit(p, limitIncrease);
         } else {
             p.sendMessage(Utils.color(plugin.getConfig().getString("limit-hit")
                                             .replace("%items%", String.valueOf(plugin.getLimitManager().getRemainingLimit(p)))));
             e.setCancelled(true);
             return;
         }
+
+        plugin.getEconomy().depositPlayer(p, total);
+        p.sendMessage(Utils.color(plugin.getConfig().getString("message-sold")
+                                        .replace("%total%", plugin.getEconomy().format(total))));
 
         //REMOVE SELL ITEM
         e.getInventory().setItem(e.getSlot(), new ItemStack(Material.AIR));

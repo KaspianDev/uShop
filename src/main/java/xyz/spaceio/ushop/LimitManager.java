@@ -12,9 +12,9 @@ import java.util.UUID;
 public class LimitManager {
 
     private final Main plugin;
-    private final Map<UUID, Integer> playerLimits;
+    private final Map<UUID, Double> playerLimits;
     private LimitType type;
-    private int limit;
+    private double limit;
 
     public LimitManager(Main plugin, LimitType type, int limit) {
         this.plugin = plugin;
@@ -24,34 +24,34 @@ public class LimitManager {
         reset();
     }
 
-    public boolean canPurchase(Player player, int amount) {
+    public boolean canPurchase(Player player, double amount) {
         if (limit < 1) return true;
         UUID uuid = player.getUniqueId();
 
-        int purchases;
+        double oldAmount;
         if (!playerLimits.containsKey(uuid)) {
-            purchases = 0;
-            playerLimits.put(uuid, purchases);
+            oldAmount = 0;
+            playerLimits.put(uuid, oldAmount);
         } else {
-            purchases = playerLimits.get(uuid);
+            oldAmount = playerLimits.get(uuid);
         }
 
-        int newPurchases = purchases + amount;
-        return newPurchases <= limit;
+        double newAmount = oldAmount + amount;
+        return newAmount <= limit;
     }
 
-    public int getRemainingLimit(Player player) {
+    public double getRemainingLimit(Player player) {
         UUID uuid = player.getUniqueId();
-        int purchases = playerLimits.getOrDefault(uuid, 0);
+        double currentAmount = playerLimits.getOrDefault(uuid, 0d);
 
-        return limit - purchases;
+        return limit - currentAmount;
     }
 
-    public void addPurchase(Player player, int amount) {
+    public void addToLimit(Player player, double amount) {
         if (limit < 1) return;
         UUID uuid = player.getUniqueId();
 
-        int newAmount;
+        double newAmount;
         if (!playerLimits.containsKey(uuid)) {
             newAmount = 0;
             playerLimits.put(uuid, newAmount);
