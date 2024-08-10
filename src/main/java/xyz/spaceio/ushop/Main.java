@@ -23,6 +23,7 @@ import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.spaceio.customitem.CustomItem;
+import xyz.spaceio.hook.PlaceholderAPIHook;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -100,6 +101,10 @@ public class Main extends JavaPlugin {
                 this,
                 LimitManager.LimitType.valueOf(cfg.getString("limit-type")),
                 cfg.getInt("limit"));
+
+        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new PlaceholderAPIHook(this).register();
+        }
 
         // async update task
         pluginTask = this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {

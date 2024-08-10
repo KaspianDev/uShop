@@ -1,13 +1,13 @@
 name: uShop
-depends: [Vault]
-soft-depends: [Essentials]
-author: Linus122
+depends: [ Vault ]
+softdepend: [ Essentials, PlaceholderAPI ]
+authors: [ Linus122, KaspianDev ]
 main: xyz.spaceio.ushop.Main
-version: 2.2.2-SNAPSHOT
+version: 2.3.0
 api-version: 1.13
-description: easy sell your stuff
+description: Sell your items easily
 commands:
-   ushop:
-      description: main command of ushop
-      usage: /<command>
-      permission: ushop.admin
+  ushop:
+    description: Main command of ushop
+    usage: /<command>
+    permission: ushop.admin

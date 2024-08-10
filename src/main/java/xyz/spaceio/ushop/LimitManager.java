@@ -41,6 +41,8 @@ public class LimitManager {
     }
 
     public double getRemainingLimit(Player player) {
+        if (limit < 1) return -1;
+
         UUID uuid = player.getUniqueId();
         double currentAmount = playerLimits.getOrDefault(uuid, 0d);
 
