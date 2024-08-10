@@ -2,7 +2,9 @@ package xyz.spaceio.customitem;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -33,11 +35,12 @@ public class CustomItem implements ConfigurationSerializable {
         this.durability = is.getDurability();
         if (is.hasItemMeta()) {
             hasMeta = true;
-            if (is.getItemMeta().hasDisplayName()) {
-                this.displayname = is.getItemMeta().getDisplayName();
+            ItemMeta meta = is.getItemMeta();
+            if (meta.hasDisplayName()) {
+                this.displayname = meta.getDisplayName();
             }
-            if (is.getItemMeta().hasLore()) {
-                this.lore = is.getItemMeta().getLore();
+            if (meta.hasLore()) {
+                this.lore = meta.getLore();
             }
         }
         this.enchantements = is.getEnchantments().entrySet().stream()
@@ -76,22 +79,24 @@ public class CustomItem implements ConfigurationSerializable {
         }
 
         if (hasMeta && !hasFlag(Flags.IGNORE_META)) {
-
+            ItemMeta meta = is.getItemMeta();
             if (!hasFlag(Flags.IGNORE_DISPLAYNAME)) {
-                if (displayname == null && is.getItemMeta().hasDisplayName() || displayname != null && !is.getItemMeta().hasDisplayName()) {
+                if (displayname == null && meta.hasDisplayName() || displayname != null && !meta.hasDisplayName()) {
                     return false;
                 }
 
-                if (displayname != null && is.getItemMeta().hasDisplayName() && !displayname.equals(is.getItemMeta().getDisplayName())) {
+                if (displayname != null && meta.hasDisplayName() && !displayname.equals(meta.getDisplayName())) {
                     return false;
                 }
             }
 
             if (!hasFlag(Flags.IGNORE_ENCHANTMENTS)) {
-                if (enchantements != null && !is.getEnchantments().isEmpty()) {
-                    boolean matchesEnchantments = is.getEnchantments().entrySet().stream().allMatch(entry -> {
-                        if (enchantements.containsKey(entry.getKey().getKey().getKey())) {
-                            return entry.getValue().equals(enchantements.get(entry.getKey().getKey().getKey()));
+                Map<Enchantment, Integer> itemEnchantments = is.getEnchantments();
+                if (enchantements != null && !itemEnchantments.isEmpty()) {
+                    boolean matchesEnchantments = itemEnchantments.entrySet().stream().allMatch(entry -> {
+                        String key = entry.getKey().getKey().getKey();
+                        if (enchantements.containsKey(key)) {
+                            return entry.getValue().equals(enchantements.get(key));
                         }
                         return false;
                     });
@@ -100,19 +105,20 @@ public class CustomItem implements ConfigurationSerializable {
                         return false;
                     }
 
-                } else if (!(enchantements.isEmpty() && is.getEnchantments().isEmpty())) {
+                } else if (!(enchantements.isEmpty() && itemEnchantments.isEmpty())) {
                     return false;
                 }
             }
 
-            if (lore != null && !is.getItemMeta().getLore().isEmpty() && !hasFlag(Flags.IGNORE_LORE)) {
+            List<String> lore = meta.getLore();
+            if (lore != null && !lore.isEmpty() && !hasFlag(Flags.IGNORE_LORE)) {
                 int[] matches = {0};
                 lore.forEach((line) -> {
-                    if (is.getItemMeta().getLore().contains(line)) {
+                    if (lore.contains(line)) {
                         matches[0]++;
                     }
                 });
-                return matches[0] == is.getItemMeta().getLore().size();
+                return matches[0] == lore.size();
             }
             return true;
 

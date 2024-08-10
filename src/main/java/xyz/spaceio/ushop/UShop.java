@@ -123,58 +123,56 @@ public class UShop extends JavaPlugin {
                         // Triggered in some rare cases, ignore it
                         continue;
                     }
-                    if (p.getOpenInventory().getTopInventory() != null) {
-                        Inventory shopInventory = p.getOpenInventory().getTopInventory();
+                    Inventory shopInventory = p.getOpenInventory().getTopInventory();
+                    if (this.getOpenShops().containsValue(shopInventory)) {
+                        // Update
+                        ItemStack[] invContent = shopInventory.getContents();
+                        invContent[shopInventory.getSize() - 5] = null;
 
-                        if (this.getOpenShops().values().contains(shopInventory)) {
-                            // Update
-                            ItemStack[] invContent = shopInventory.getContents();
-                            invContent[shopInventory.getSize() - 5] = null;
+                        List<String> lore = new ArrayList<>();
+                        double[] totalPrice = {0d};
 
-                            List<String> lore = new ArrayList<>();
-                            double[] totalPrice = {0d};
+                        cfg.getStringList("gui-sellitem.lore").stream()
+                           .map((line) -> line.replace("%remaininglimit%", DecimalUtil.format(limitManager.getRemainingLimit(p))))
+                           .map(ColorUtil::color)
+                           .forEach(lore::add);
 
-                            cfg.getStringList("gui-sellitem.lore").stream()
-                               .map((line) -> line.replace("%remaininglimit%", DecimalUtil.format(limitManager.getRemainingLimit(p))))
-                               .map(ColorUtil::color)
-                               .forEach(lore::add);
+                        getSalableItems(invContent).forEach((item, amount) -> {
+                            double totalStackPrice = item.getPrice() * amount;
+                            totalPrice[0] += totalStackPrice;
+                            lore.addAll(getCustomItemDescription(item, amount));
+                        });
 
-                            getSalableItems(invContent).forEach((item, amount) -> {
-                                double totalStackPrice = item.getPrice() * amount;
-                                totalPrice[0] += totalStackPrice;
-                                lore.addAll(getCustomItemDescription(item, amount));
-                            });
+                        ItemStack sell = shopInventory.getItem(shopInventory.getSize() - 5);
 
-                            ItemStack sell = shopInventory.getItem(shopInventory.getSize() - 5);
+                        if (sell == null)
+                            continue;
 
-                            if (sell == null)
-                                continue;
-                            if (sell.getItemMeta() == null)
-                                continue;
+                        ItemMeta im = sell.getItemMeta();
+                        if (im == null)
+                            continue;
 
-                            ItemMeta im = sell.getItemMeta();
-                            im.setDisplayName(cfg.getString("gui-sellitem.displayname").replace('&', '§')
-                                                 .replace("%total%", economy.format(totalPrice[0])));
-                            im.setLore(lore);
-                            sell.setItemMeta(im);
+                        im.setDisplayName(cfg.getString("gui-sellitem.displayname").replace('&', '§')
+                                             .replace("%total%", economy.format(totalPrice[0])));
+                        im.setLore(lore);
+                        sell.setItemMeta(im);
 
-                            shopInventory.setItem(shopInventory.getSize() - 5, sell);
+                        shopInventory.setItem(shopInventory.getSize() - 5, sell);
 
-                        } else {
-                            ItemStack[] stacks = openShops.get(p).getContents();
-                            stacks[openShops.get(p).getSize() - 5] = null;
-                            for (int i = 0; i < stacks.length; i++) {
+                    } else {
+                        ItemStack[] stacks = openShops.get(p).getContents();
+                        stacks[openShops.get(p).getSize() - 5] = null;
+                        for (int i = 0; i < stacks.length; i++) {
 
-                                if (stacks[i] != null && i >= openShops.get(p).getSize() - 9) {
-                                    stacks[i] = null;
-                                }
+                            if (stacks[i] != null && i >= openShops.get(p).getSize() - 9) {
+                                stacks[i] = null;
                             }
-                            addToInv(p.getInventory(), stacks);
-                            it.remove();
                         }
-
-
+                        addToInv(p.getInventory(), stacks);
+                        it.remove();
                     }
+
+
                 }
             }
         }, 20L, 20L);
@@ -196,8 +194,8 @@ public class UShop extends JavaPlugin {
     }
 
     public List<String> getCustomItemDescription(CustomItem item, int amount) {
-        return getCustomItemDescription(item, amount, cfg.getString("gui-item-enumeration-format")
-                                                         .replace("&", "§"));
+        return getCustomItemDescription(item, amount, ColorUtil.color(cfg.getString("gui-item-enumeration-format"))
+        );
     }
 
     public List<String> getCustomItemDescription(CustomItem item, int amount, String itemEnumFormat) {
@@ -243,37 +241,31 @@ public class UShop extends JavaPlugin {
 
     public void addToInv(Inventory inv, ItemStack[] is) {
         for (ItemStack stack : is) {
-            if (stack != null) {
-
-                inv.addItem(stack);
-            }
+            if (stack == null) continue;
+            inv.addItem(stack);
         }
     }
 
     public HashMap<CustomItem, Integer> getSalableItems(ItemStack[] is) {
         HashMap<CustomItem, Integer> customItemsMap = new HashMap<>();
         for (ItemStack stack : is) {
-            if (stack != null) {
-                if (stack.getType().toString().toUpperCase().contains("SHULKER_BOX")) {
-                    Inventory container = ((InventoryHolder) ((BlockStateMeta) stack.getItemMeta()).getBlockState()).getInventory();
-                    for (int j = 0; j < container.getSize(); j++) {
-                        ItemStack shulkerItem = container.getItem(j);
-                        if (shulkerItem != null && !shulkerItem.getType().equals(Material.AIR)) {
-                            Optional<CustomItem> opt = findCustomItem(shulkerItem);
-                            if (opt.isPresent() && this.isSalable(shulkerItem)) {
-                                // add item to map
-                                customItemsMap.compute(opt.get(), (k, v) -> v == null ? shulkerItem.getAmount() : v + shulkerItem.getAmount());
-                            }
-                        }
-                    }
-                } else {
-                    // check if item is in the custom item list
-                    Optional<CustomItem> opt = findCustomItem(stack);
-                    if (opt.isPresent() && this.isSalable(stack)) {
-                        // add item to map
-                        customItemsMap.compute(opt.get(), (k, v) -> v == null ? stack.getAmount() : v + stack.getAmount());
-                    }
+            if (stack == null) continue;
+            if (stack.getType().toString().toUpperCase().contains("SHULKER_BOX")) {
+                Inventory container = ((InventoryHolder) ((BlockStateMeta) stack.getItemMeta()).getBlockState()).getInventory();
+                for (int j = 0; j < container.getSize(); j++) {
+                    ItemStack shulkerItem = container.getItem(j);
+                    if (shulkerItem == null || shulkerItem.getType().equals(Material.AIR)) continue;
+                    Optional<CustomItem> opt = findCustomItem(shulkerItem);
+                    if (!opt.isPresent() || !this.isSalable(shulkerItem)) continue;
+                    // add item to map
+                    customItemsMap.compute(opt.get(), (k, v) -> v == null ? shulkerItem.getAmount() : v + shulkerItem.getAmount());
                 }
+            } else {
+                // check if item is in the custom item list
+                Optional<CustomItem> opt = findCustomItem(stack);
+                if (!opt.isPresent() || !this.isSalable(stack)) continue;
+                // add item to map
+                customItemsMap.compute(opt.get(), (k, v) -> v == null ? stack.getAmount() : v + stack.getAmount());
             }
         }
         return customItemsMap;
@@ -297,12 +289,7 @@ public class UShop extends JavaPlugin {
     public boolean isSalable(ItemStack is) {
         if (is == null || is.getType() == Material.AIR) return false;
         Optional<CustomItem> customItemOptional = this.findCustomItem(is);
-        if (customItemOptional.isPresent()) {
-            if (customItemOptional.get().getPrice() > 0d) {
-                return true;
-            }
-        }
-        return false;
+        return customItemOptional.filter(customItem -> customItem.getPrice() > 0d).isPresent();
     }
 
     public Economy getEconomy() {
@@ -358,18 +345,16 @@ public class UShop extends JavaPlugin {
     }
 
     public boolean isShopGUI(InventoryView inventoryView) {
-        return inventoryView.getTitle().equals(this.getConfig().getString("gui-name").replace("&", "§"));
+        return inventoryView.getTitle().equals(ColorUtil.color(this.getConfig().getString("gui-name")));
     }
 
     public void openShop(Player p) {
         Inventory inv = Bukkit.createInventory(null, 9 * this.getConfig().getInt("gui-rows"),
-                this.getConfig().getString("gui-name").replace("&", "§"));
+                ColorUtil.color(this.getConfig().getString("gui-name")));
         ItemStack is = new ItemStack(Material.getMaterial(this.getConfig().getString("gui-sellitem.material")));
         ItemMeta im = is.getItemMeta();
-        im.setDisplayName(this.getConfig().getString("gui-sellitem.displayname")
-                              .replace('&', '§')
-                              .replace("%total%",
-                                      this.getEconomy().format(0)));
+        im.setDisplayName(ColorUtil.color(this.getConfig().getString("gui-sellitem.displayname")
+                                              .replace("%total%", this.getEconomy().format(0))));
         is.setItemMeta(im);
         inv.setItem(inv.getSize() - 5, is);
 

@@ -4,6 +4,7 @@ gui-sellitem:
   material: "EMERALD"
   displayname: "&cClick to Sell (&a%total%&c)"
   lore:
+    # - "&7You can sell %remaininglimit%$ worth of items!"
     - "&7You can sell %remaininglimit% more items!"
     - ""
 gui-bottomrow:
@@ -15,8 +16,10 @@ receipt:
   format: "%amount%x &c%material%&r = &a %price%"
 gui-item-enumeration-format: "%amount%x &c%material%&r = &a %price%"
 message-sold: "&aSold all items for &c%total%&a!"
+# limit-hit: "&cYou can only sell %remaininglimit%$ worth of items, your limit will reset next hour!"
 limit-hit: "&cYou can only sell %remaininglimit% more items, your limit will reset next hour!"
 command: "sell"
+# AMOUNT, MONEY
 limit-type: AMOUNT
 limit: 64
 # sell prices. I suggest to use /ushop setprice in game for adding items, or use /ushop convert in order to use your essentialsx prices!
