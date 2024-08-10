@@ -1,18 +1,18 @@
-package xyz.spaceio.hook;
+package xyz.spaceio.ushop.hook;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.spaceio.ushop.Main;
+import xyz.spaceio.ushop.UShop;
 
 public class PlaceholderAPIHook extends PlaceholderExpansion {
 
-    private static final String REMAINING_LIMIT = "_remaininglimit";
+    private static final String REMAINING_LIMIT = "remaininglimit";
 
-    private final Main plugin;
+    private final UShop plugin;
 
-    public PlaceholderAPIHook(Main plugin) {
+    public PlaceholderAPIHook(UShop plugin) {
         this.plugin = plugin;
     }
 

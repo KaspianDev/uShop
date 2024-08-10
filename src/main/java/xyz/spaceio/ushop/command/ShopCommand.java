@@ -1,4 +1,4 @@
-package xyz.spaceio.ushop;
+package xyz.spaceio.ushop.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -9,17 +9,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import xyz.spaceio.customitem.CustomItem;
 import xyz.spaceio.customitem.Flags;
+import xyz.spaceio.ushop.UShop;
+import xyz.spaceio.ushop.hook.EssentialsHook;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class uShopCmd implements CommandExecutor {
+public class ShopCommand implements CommandExecutor {
 
-    Main plugin;
+    UShop plugin;
 
-    public uShopCmd(Main plugin) {
+    public ShopCommand(UShop plugin) {
         this.plugin = plugin;
     }
 
@@ -52,7 +54,6 @@ public class uShopCmd implements CommandExecutor {
             // item holding
             ItemStack inHand = p.getInventory().getItemInMainHand();
             double price = Double.parseDouble(args[1]);
-
 
             CustomItem customItem = new CustomItem(p.getInventory().getItemInMainHand(), price);
 
@@ -101,7 +102,7 @@ public class uShopCmd implements CommandExecutor {
             return true;
         } else if (args[0].equalsIgnoreCase("convert")) {
 
-            List<String> log = EssentialsWorthConverter.convert(plugin);
+            List<String> log = EssentialsHook.convert(plugin);
             cs.sendMessage(log.toArray(new String[0]));
 
             return true;

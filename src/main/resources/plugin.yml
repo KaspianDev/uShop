@@ -2,7 +2,7 @@ name: uShop
 depends: [ Vault ]
 softdepend: [ Essentials, PlaceholderAPI ]
 authors: [ Linus122, KaspianDev ]
-main: xyz.spaceio.ushop.Main
+main: xyz.spaceio.ushop.UShop
 version: 2.3.0
 api-version: 1.13
 description: Sell your items easily

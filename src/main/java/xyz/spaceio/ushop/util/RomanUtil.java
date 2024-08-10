@@ -1,13 +1,11 @@
-package xyz.spaceio.ushop;
-
-import net.md_5.bungee.api.ChatColor;
+package xyz.spaceio.ushop.util;
 
 import java.util.TreeMap;
 
 /**
  * @author https://stackoverflow.com/questions/12967896/converting-integers-to-roman-numerals-java
  */
-public class Utils {
+public class RomanUtil {
     private final static TreeMap<Integer, String> map = new TreeMap<>();
 
     static {
@@ -26,16 +24,14 @@ public class Utils {
         map.put(1, "I");
     }
 
+    private RomanUtil() {}
+
     public static String toRoman(int number) {
         int l = map.floorKey(number);
         if (number == l) {
             return map.get(number);
         }
         return map.get(l) + toRoman(number - l);
-    }
-
-    public static String color(String string) {
-        return ChatColor.translateAlternateColorCodes('&', string);
     }
 
 }

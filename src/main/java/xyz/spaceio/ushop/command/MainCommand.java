@@ -1,14 +1,15 @@
-package xyz.spaceio.ushop;
+package xyz.spaceio.ushop.command;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
+import xyz.spaceio.ushop.UShop;
 
-public class Cmd extends BukkitCommand {
+public class MainCommand extends BukkitCommand {
 
-    private final Main plugin;
+    private final UShop plugin;
 
-    protected Cmd(Main plugin, String name) {
+    public MainCommand(UShop plugin, String name) {
         super(name);
         this.plugin = plugin;
         this.setPermission("ushop.use");
@@ -18,8 +19,7 @@ public class Cmd extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender cs, String arg1, String[] arg2) {
-        if (!(cs instanceof Player))
-            return true;
+        if (!(cs instanceof Player)) return true;
         Player p = (Player) cs;
         if (!p.hasPermission("ushop.use")) {
             cs.sendMessage("You dont have permission!");

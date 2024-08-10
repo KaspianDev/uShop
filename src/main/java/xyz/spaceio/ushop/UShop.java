@@ -2,7 +2,6 @@ package xyz.spaceio.ushop;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import de.Linus122.SpaceIOMetrics.Metrics;
 import net.milkbowl.vault.economy.Economy;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
@@ -23,7 +22,13 @@ import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.spaceio.customitem.CustomItem;
-import xyz.spaceio.hook.PlaceholderAPIHook;
+import xyz.spaceio.ushop.command.MainCommand;
+import xyz.spaceio.ushop.command.ShopCommand;
+import xyz.spaceio.ushop.hook.PlaceholderAPIHook;
+import xyz.spaceio.ushop.limit.ClickListener;
+import xyz.spaceio.ushop.util.ColorUtil;
+import xyz.spaceio.ushop.util.DecimalUtil;
+import xyz.spaceio.ushop.util.RomanUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,7 +37,7 @@ import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Main extends JavaPlugin {
+public class UShop extends JavaPlugin {
 
     /*
      * Vault Economy plugin
@@ -83,9 +88,9 @@ public class Main extends JavaPlugin {
         // registering command
         registerCommand(this.cfg.getString("command"));
 
-        this.getCommand("ushop").setExecutor(new uShopCmd(this));
+        this.getCommand("ushop").setExecutor(new ShopCommand(this));
 
-        this.getServer().getPluginManager().registerEvents(new Listeners(this), this);
+        this.getServer().getPluginManager().registerEvents(new ClickListener(this), this);
 
         String fileName = new SimpleDateFormat("yyyy'-'MM'-'dd'_'HH'-'mm'-'ss'_'zzz'.log'").format(new Date());
         File dir = new File(getDataFolder(), "logs");
@@ -126,8 +131,13 @@ public class Main extends JavaPlugin {
                             ItemStack[] invContent = shopInventory.getContents();
                             invContent[shopInventory.getSize() - 5] = null;
 
-                            List<String> lore = new ArrayList<String>();
+                            List<String> lore = new ArrayList<>();
                             double[] totalPrice = {0d};
+
+                            cfg.getStringList("gui-sellitem.lore").stream()
+                               .map((line) -> line.replace("%remaininglimit%", DecimalUtil.format(limitManager.getRemainingLimit(p))))
+                               .map(ColorUtil::color)
+                               .forEach(lore::add);
 
                             getSalableItems(invContent).forEach((item, amount) -> {
                                 double totalStackPrice = item.getPrice() * amount;
@@ -168,9 +178,6 @@ public class Main extends JavaPlugin {
                 }
             }
         }, 20L, 20L);
-
-        // init spaceio metrics
-        new Metrics(this);
     }
 
     @Override
@@ -205,7 +212,7 @@ public class Main extends JavaPlugin {
 
         // adding enchantements
         item.getEnchantements().forEach((enchantement, level) -> {
-            list.add(String.format("§7%s %s", WordUtils.capitalize(enchantement), Utils.toRoman(level)));
+            list.add(String.format("§7%s %s", WordUtils.capitalize(enchantement), RomanUtil.toRoman(level)));
         });
 
         item.getFlags().forEach(flag -> {
@@ -331,7 +338,7 @@ public class Main extends JavaPlugin {
             // register
             bukkitCommandMap.setAccessible(true);
             CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
-            Cmd cmd = new Cmd(this, cmdLabel);
+            MainCommand cmd = new MainCommand(this, cmdLabel);
             commandMap.register(cmdLabel, cmd);
         } catch (Exception e) {
             e.printStackTrace();
@@ -368,7 +375,7 @@ public class Main extends JavaPlugin {
 
         ItemStack pane = new ItemStack(Material.valueOf(cfg.getString("gui-bottomrow.material")));
         ItemMeta meta = pane.getItemMeta();
-        meta.setDisplayName(Utils.color(cfg.getString("gui-bottomrow.displayname")));
+        meta.setDisplayName(ColorUtil.color(cfg.getString("gui-bottomrow.displayname")));
         pane.setItemMeta(meta);
 
         for (int i = inv.getSize() - 9; i < inv.getSize(); i++) {

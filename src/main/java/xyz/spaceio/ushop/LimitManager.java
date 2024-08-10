@@ -11,12 +11,12 @@ import java.util.UUID;
 
 public class LimitManager {
 
-    private final Main plugin;
+    private final UShop plugin;
     private final Map<UUID, Double> playerLimits;
     private LimitType type;
     private double limit;
 
-    public LimitManager(Main plugin, LimitType type, int limit) {
+    public LimitManager(UShop plugin, LimitType type, int limit) {
         this.plugin = plugin;
         this.type = type;
         this.limit = limit;
@@ -84,6 +84,10 @@ public class LimitManager {
             playerLimits.clear();
             reset();
         }, (duration.toMillis() / 1000) * 20);
+    }
+
+    public double getLimit() {
+        return limit;
     }
 
     public LimitType getType() {

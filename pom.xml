@@ -46,12 +46,6 @@
             <version>1.7</version>
             <scope>provided</scope>
         </dependency>
-        <!--SpaceIO Metrics -->
-        <dependency>
-            <groupId>com.github.mastercake10</groupId>
-            <artifactId>SpaceIOMetrics</artifactId>
-            <version>master-e0902bd50a-1</version>
-        </dependency>
         <!-- PlaceholderAPI -->
         <dependency>
             <groupId>me.clip</groupId>
@@ -73,35 +67,6 @@
             </resource>
         </resources>
         <plugins>
-            <!-- Sets the Java version to 8 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.github.mastercake10:SpaceIOMetrics</include>
-                                </includes>
-                            </artifactSet>
-                            <filters>
-                                <filter>
-                                    <artifact>com.github.mastercake10:SpaceIOMetrics</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Sets the custom JARfile name (Project name without spaces is good) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

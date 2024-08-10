@@ -91,9 +91,7 @@ public class CustomItem implements ConfigurationSerializable {
                 if (enchantements != null && !is.getEnchantments().isEmpty()) {
                     boolean matchesEnchantments = is.getEnchantments().entrySet().stream().allMatch(entry -> {
                         if (enchantements.containsKey(entry.getKey().getKey().getKey())) {
-                            if (entry.getValue().equals(enchantements.get(entry.getKey().getKey().getKey()))) {
-                                return true;
-                            }
+                            return entry.getValue().equals(enchantements.get(entry.getKey().getKey().getKey()));
                         }
                         return false;
                     });

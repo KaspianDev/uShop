@@ -1,4 +1,4 @@
-package xyz.spaceio.ushop;
+package xyz.spaceio.ushop.limit;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -18,6 +18,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import xyz.spaceio.customitem.CustomItem;
+import xyz.spaceio.ushop.LimitManager;
+import xyz.spaceio.ushop.UShop;
+import xyz.spaceio.ushop.util.ColorUtil;
+import xyz.spaceio.ushop.util.DecimalUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,14 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+public class ClickListener implements Listener {
+    private final HashMap<String, Long> cooldowns = new HashMap<>();
 
-public class Listeners implements Listener {
-    HashMap<String, Long> cooldowns = new HashMap<>();
+    private final UShop plugin;
 
-    Main plugin;
-
-    public Listeners(Main main) {
-        this.plugin = main;
+    public ClickListener(UShop plugin) {
+        this.plugin = plugin;
     }
 
     @SuppressWarnings("deprecation")
@@ -80,15 +83,15 @@ public class Listeners implements Listener {
         if (plugin.getLimitManager().canPurchase(p, limitIncrease)) {
             plugin.getLimitManager().addToLimit(p, limitIncrease);
         } else {
-            p.sendMessage(Utils.color(plugin.getConfig().getString("limit-hit")
-                                            .replace("%items%", String.valueOf(plugin.getLimitManager().getRemainingLimit(p)))));
+            p.sendMessage(ColorUtil.color(plugin.getConfig().getString("limit-hit")
+                                                .replace("%remaininglimit%", DecimalUtil.format(plugin.getLimitManager().getRemainingLimit(p)))));
             e.setCancelled(true);
             return;
         }
 
         plugin.getEconomy().depositPlayer(p, total);
-        p.sendMessage(Utils.color(plugin.getConfig().getString("message-sold")
-                                        .replace("%total%", plugin.getEconomy().format(total))));
+        p.sendMessage(ColorUtil.color(plugin.getConfig().getString("message-sold")
+                                            .replace("%total%", plugin.getEconomy().format(total))));
 
         //REMOVE SELL ITEM
         e.getInventory().setItem(e.getSlot(), new ItemStack(Material.AIR));
@@ -98,16 +101,16 @@ public class Listeners implements Listener {
         }
 
         List<String> allLines = new ArrayList<>();
-        allLines.add(Utils.color(plugin.getConfig().getString("receipt.header")));
+        allLines.add(ColorUtil.color(plugin.getConfig().getString("receipt.header")));
         for (Entry<CustomItem, Integer> entry : listOfItems.entrySet()) {
-            List<String> desc = plugin.getCustomItemDescription(entry.getKey(), entry.getValue(), Utils.color(plugin.getConfig().getString("receipt.format")));
+            List<String> desc = plugin.getCustomItemDescription(entry.getKey(), entry.getValue(), ColorUtil.color(plugin.getConfig().getString("receipt.format")));
             for (String str : desc) {
                 String date = new SimpleDateFormat("HH':'mm':'ss").format(new Date());
                 plugin.getLogs().println("[" + date + "] " + p.getName() + " had sold -> " + ChatColor.stripColor(str));
             }
             allLines.addAll(desc);
         }
-        TextComponent receipt = new TextComponent(Utils.color(plugin.getConfig().getString("receipt.message")));
+        TextComponent receipt = new TextComponent(ColorUtil.color(plugin.getConfig().getString("receipt.message")));
         receipt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(String.join("\n" + ChatColor.RESET, allLines))}));
         p.spigot().sendMessage(receipt);
 
